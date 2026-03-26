@@ -1,0 +1,36 @@
+C:\Projects\personal-website\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:320
+        throw new PrismaClientInitializationError(
+              ^
+
+PrismaClientInitializationError: `PrismaClient` needs to be constructed with a non-empty, valid `PrismaClientOptions`:
+
+```
+new PrismaClient({
+  ...
+})
+```
+
+or
+
+```
+constructor() {
+  super({ ... });
+}
+```
+          
+    at new t (C:\Projects\personal-website\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:320:15)
+    at bcrypt (C:\Projects\personal-website\prisma\seed.ts:5:16)
+    at Object.<anonymous> (C:\Projects\personal-website\prisma\seed.ts:151:3)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object.transformer (C:\Projects\personal-website\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at loadCJSModuleWithModuleLoad (node:internal/modules/esm/translators:325:3)
+    at ModuleWrap.<anonymous> (node:internal/modules/esm/translators:230:7) {
+  clientVersion: '7.5.0',
+  errorCode: undefined,
+  retryable: undefined
+}
+
+Node.js v25.8.2
