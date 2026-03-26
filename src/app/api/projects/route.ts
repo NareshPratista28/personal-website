@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { auth } from '@/auth'
+import { revalidatePath } from 'next/cache'
 
 // GET /api/projects
 export async function GET(req: NextRequest) {
@@ -31,5 +32,6 @@ export async function POST(req: NextRequest) {
 		data: { title, category, description, imageUrl, demoUrl, githubUrl, status, order: order ?? 0 },
 	})
 
+	revalidatePath('/')
 	return NextResponse.json(project, { status: 201 })
 }

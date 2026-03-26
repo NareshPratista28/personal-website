@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { auth } from '@/auth'
+import { revalidatePath } from 'next/cache'
 
 // GET /api/settings
 export async function GET() {
@@ -25,5 +26,6 @@ export async function PUT(req: NextRequest) {
 	)
 
 	await Promise.all(updates)
+	revalidatePath('/')
 	return NextResponse.json({ success: true })
 }

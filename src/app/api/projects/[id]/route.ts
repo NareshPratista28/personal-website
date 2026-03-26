@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { auth } from '@/auth'
+import { revalidatePath } from 'next/cache'
 
 // GET /api/projects/[id]
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -23,6 +24,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 		where: { id },
 		data: { title, category, description, imageUrl, demoUrl, githubUrl, status, order },
 	})
+	revalidatePath('/')
 
 	return NextResponse.json(project)
 }
@@ -34,5 +36,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
 	const { id } = await params
 	await prisma.project.delete({ where: { id } })
+	revalidatePath('/')
 	return NextResponse.json({ success: true })
 }

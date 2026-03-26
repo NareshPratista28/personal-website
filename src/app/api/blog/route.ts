@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { auth } from '@/auth'
+import { revalidatePath } from 'next/cache'
 
 // GET /api/blog
 export async function GET(req: NextRequest) {
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
 				publishedAt: status === 'PUBLISHED' ? new Date() : null,
 			},
 		})
+		revalidatePath('/')
 		return NextResponse.json(post, { status: 201 })
 	} catch {
 		return NextResponse.json({ error: 'Slug already exists' }, { status: 400 })
