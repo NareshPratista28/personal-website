@@ -16,6 +16,12 @@ import {
 const navItems = [
 	{ href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
 	{
+		href: '/admin/messages',
+		label: 'Messages',
+		icon: FileText,
+		exact: false,
+	},
+	{
 		href: '/admin/projects',
 		label: 'Projects',
 		icon: FolderOpen,

@@ -17,21 +17,38 @@ export default function ContactSection({ email, location }: ContactSectionProps)
 	const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' })
 	const [loading, setLoading] = useState(false)
 	const [sent, setSent] = useState(false)
+	const [error, setError] = useState<string | null>(null)
 
 	function set(k: keyof typeof form, v: string) {
 		setForm(f => ({ ...f, [k]: v }))
+		if (error) setError(null)
 	}
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault()
 		setLoading(true)
-		await fetch('/api/contact', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(form),
-		})
-		setLoading(false)
-		setSent(true)
+		setError(null)
+
+		try {
+			const res = await fetch('/api/contact', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(form),
+			})
+
+			const data = await res.json()
+
+			if (!res.ok) {
+				throw new Error(data.error || 'Failed to send message')
+			}
+
+			setSent(true)
+			setForm({ name: '', email: '', phone: '', subject: '', message: '' })
+		} catch (err: any) {
+			setError(err.message || 'Something went wrong. Please try again.')
+		} finally {
+			setLoading(false)
+		}
 	}
 
 	return (
@@ -94,10 +111,15 @@ export default function ContactSection({ email, location }: ContactSectionProps)
 							</div>
 						) : (
 							<form onSubmit={handleSubmit} className="space-y-6">
+								{error && (
+									<div className="p-4 bg-red-400/10 border border-red-400/20 text-red-400 text-sm rounded-lg">
+										{error}
+									</div>
+								)}
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 									<input type="text" placeholder="Enter Name" required value={form.name} onChange={e => set('name', e.target.value)} className="w-full bg-transparent border-b border-white/20 text-white placeholder:text-gray-500 px-1 py-3 outline-none focus:border-white transition-colors" />
 									<input type="email" placeholder="Enter Email" required value={form.email} onChange={e => set('email', e.target.value)} className="w-full bg-transparent border-b border-white/20 text-white placeholder:text-gray-500 px-1 py-3 outline-none focus:border-white transition-colors" />
-									<input type="tel" placeholder="Phone" value={form.phone} onChange={e => set('phone', e.target.value)} className="w-full bg-transparent border-b border-white/20 text-white placeholder:text-gray-500 px-1 py-3 outline-none focus:border-white transition-colors" />
+									<input type="tel" placeholder="Phone (Optional)" value={form.phone} onChange={e => set('phone', e.target.value)} className="w-full bg-transparent border-b border-white/20 text-white placeholder:text-gray-500 px-1 py-3 outline-none focus:border-white transition-colors" />
 									<input type="text" placeholder="Subject" required value={form.subject} onChange={e => set('subject', e.target.value)} className="w-full bg-transparent border-b border-white/20 text-white placeholder:text-gray-500 px-1 py-3 outline-none focus:border-white transition-colors" />
 								</div>
 
@@ -110,7 +132,7 @@ export default function ContactSection({ email, location }: ContactSectionProps)
 										className="bg-white text-black hover:bg-gray-200 rounded-none px-8 py-6 text-sm font-bold tracking-widest uppercase inline-flex items-center gap-3 group"
 									>
 										{loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
-										Send Message
+										{loading ? 'Sending...' : 'Send Message'}
 									</Button>
 
 									<div className="text-sm text-gray-400 flex flex-row gap-3">

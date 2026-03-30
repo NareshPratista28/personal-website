@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Loader2, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import ConfirmDialog from '@/components/admin/ConfirmDialog'
 
 const RichTextEditor = dynamic(
 	() => import('@/components/admin/RichTextEditor'),
@@ -54,6 +55,7 @@ export default function BlogForm({ initial }: { initial?: BlogFormData }) {
 	const [error, setError] = useState('')
 	const [uploading, setUploading] = useState(false)
 	const [autoSlug, setAutoSlug] = useState(!isEdit)
+	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
 	function set(key: keyof BlogFormData, value: string) {
 		setForm(f => ({ ...f, [key]: value }))
@@ -104,7 +106,7 @@ export default function BlogForm({ initial }: { initial?: BlogFormData }) {
 	}
 
 	async function handleDelete() {
-		if (!confirm('Delete this post? This cannot be undone.')) return
+		setShowDeleteConfirm(false)
 		setDeleting(true)
 		await fetch(`/api/blog/${initial!.id}`, { method: 'DELETE' })
 		router.push('/admin/blog')
@@ -113,6 +115,14 @@ export default function BlogForm({ initial }: { initial?: BlogFormData }) {
 
 	return (
 		<div className="p-8 max-w-3xl">
+			<ConfirmDialog
+				isOpen={showDeleteConfirm}
+				onClose={() => setShowDeleteConfirm(false)}
+				onConfirm={handleDelete}
+				isLoading={deleting}
+				title="Delete Blog Post"
+				description={`Are you sure you want to delete "${form.title}"? This will permanently remove the post from your website.`}
+			/>
 			<Link
 				href="/admin/blog"
 				className="inline-flex items-center gap-2 text-zinc-500 hover:text-white text-sm mb-8 transition-colors"
@@ -268,7 +278,7 @@ export default function BlogForm({ initial }: { initial?: BlogFormData }) {
 					{isEdit && (
 						<button
 							type="button"
-							onClick={handleDelete}
+							onClick={() => setShowDeleteConfirm(true)}
 							disabled={deleting}
 							className="flex items-center gap-2 text-red-500 hover:text-red-400 text-xs font-bold tracking-widest uppercase transition-colors"
 						>

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Loader2, Trash2 } from 'lucide-react'
 import Link from 'next/link'
+import ConfirmDialog from '@/components/admin/ConfirmDialog'
 
 type ProjectFormData = {
 	id?: string
@@ -43,6 +44,7 @@ export default function ProjectForm({
 	const [deleting, setDeleting] = useState(false)
 	const [error, setError] = useState('')
 	const [uploading, setUploading] = useState(false)
+	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
 	function set(key: keyof ProjectFormData, value: string | number) {
 		setForm(f => ({ ...f, [key]: value }))
@@ -88,7 +90,7 @@ export default function ProjectForm({
 	}
 
 	async function handleDelete() {
-		if (!confirm('Delete this project? This cannot be undone.')) return
+		setShowDeleteConfirm(false)
 		setDeleting(true)
 		await fetch(`/api/projects/${initial!.id}`, { method: 'DELETE' })
 		router.push('/admin/projects')
@@ -97,6 +99,14 @@ export default function ProjectForm({
 
 	return (
 		<div className="p-8 max-w-3xl">
+			<ConfirmDialog
+				isOpen={showDeleteConfirm}
+				onClose={() => setShowDeleteConfirm(false)}
+				onConfirm={handleDelete}
+				isLoading={deleting}
+				title="Delete Project"
+				description={`Are you sure you want to delete "${form.title}"? This action is permanent and all associated data will be removed.`}
+			/>
 			<Link
 				href="/admin/projects"
 				className="inline-flex items-center gap-2 text-zinc-500 hover:text-white text-sm mb-8 transition-colors"
@@ -272,7 +282,7 @@ export default function ProjectForm({
 					{isEdit && (
 						<button
 							type="button"
-							onClick={handleDelete}
+							onClick={() => setShowDeleteConfirm(true)}
 							disabled={deleting}
 							className="flex items-center gap-2 text-red-500 hover:text-red-400 text-xs font-bold tracking-widest uppercase transition-colors"
 						>
