@@ -70,13 +70,28 @@ export default function BlogForm({ initial }: { initial?: BlogFormData }) {
 	async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
 		const file = e.target.files?.[0]
 		if (!file) return
-		setUploading(true)
-		const fd = new FormData()
-		fd.append('file', file)
-		const res = await fetch('/api/upload', { method: 'POST', body: fd })
-		const data = await res.json()
-		if (data.url) set('coverImageUrl', data.url)
-		setUploading(false)
+		
+		try {
+			setUploading(true)
+			setError('')
+			const fd = new FormData()
+			fd.append('file', file)
+			const res = await fetch('/api/upload', { method: 'POST', body: fd })
+			
+			const data = await res.json().catch(() => null)
+			
+			if (!res.ok) {
+				throw new Error(data?.error || `Upload failed (Status ${res.status})`)
+			}
+			
+			if (data?.url) set('coverImageUrl', data.url)
+		} catch (err: any) {
+			console.error('Upload error:', err)
+			setError(err.message || 'Failed to upload image')
+		} finally {
+			setUploading(false)
+			e.target.value = ''
+		}
 	}
 
 	async function handleSubmit(e: React.FormEvent) {
