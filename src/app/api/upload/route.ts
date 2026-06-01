@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
+import { put } from '@vercel/blob'
 
 export async function POST(req: NextRequest) {
 	try {
@@ -34,17 +33,12 @@ export async function POST(req: NextRequest) {
 			)
 		}
 
-		const ext = file.name.split('.').pop()
-		const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-		const uploadDir = path.join(process.cwd(), 'public', 'uploads')
+		// Upload the file to Vercel Blob
+		const blob = await put(file.name, file, {
+			access: 'public',
+		})
 
-		await mkdir(uploadDir, { recursive: true })
-
-		const bytes = await file.arrayBuffer()
-		const buffer = Buffer.from(bytes)
-		await writeFile(path.join(uploadDir, fileName), buffer)
-
-		return NextResponse.json({ url: `/uploads/${fileName}` })
+		return NextResponse.json({ url: blob.url })
 	} catch (error: any) {
 		console.error('Error in upload API:', error)
 		return NextResponse.json(
