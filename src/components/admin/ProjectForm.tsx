@@ -18,20 +18,28 @@ type ProjectFormData = {
 	order: number
 }
 
-const CATEGORIES = ['Web App', 'Mobile App', 'UI/UX', 'Backend', 'Other']
-
 export default function ProjectForm({
 	initial,
+	predefinedCategories,
 }: {
 	initial?: ProjectFormData
+	predefinedCategories?: string[]
 }) {
 	const router = useRouter()
 	const isEdit = !!initial?.id
 
+	const categories = predefinedCategories || [
+		'Web App',
+		'Mobile App',
+		'UI/UX Design',
+		'Backend',
+		'Other',
+	]
+
 	const [form, setForm] = useState<ProjectFormData>(
 		initial ?? {
 			title: '',
-			category: 'Web App',
+			category: categories[0],
 			description: '',
 			imageUrl: '',
 			demoUrl: '',
@@ -60,13 +68,13 @@ export default function ProjectForm({
 			const fd = new FormData()
 			fd.append('file', file)
 			const res = await fetch('/api/upload', { method: 'POST', body: fd })
-			
+
 			const data = await res.json().catch(() => null)
-			
+
 			if (!res.ok) {
 				throw new Error(data?.error || `Upload failed (Status ${res.status})`)
 			}
-			
+
 			if (data?.url) set('imageUrl', data.url)
 		} catch (err: any) {
 			console.error('Upload error:', err)
@@ -82,6 +90,22 @@ export default function ProjectForm({
 		setError('')
 		setLoading(true)
 
+		if (form.category && !categories.includes(form.category)) {
+			try {
+				const updatedCategories = [...categories, form.category]
+				await fetch('/api/settings', {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						project_categories: JSON.stringify(updatedCategories),
+					}),
+				})
+			} catch (err) {
+				console.error('Failed to auto-save new category:', err)
+			}
+		}
+
+		// 2. Save project
 		const method = isEdit ? 'PUT' : 'POST'
 		const url = isEdit ? `/api/projects/${initial!.id}` : '/api/projects'
 
@@ -158,17 +182,20 @@ export default function ProjectForm({
 					<label className="text-xs font-semibold tracking-widest uppercase text-zinc-400">
 						Category *
 					</label>
-					<select
+					<input
+						type="text"
+						list="categories-list"
+						required
 						value={form.category}
 						onChange={e => set('category', e.target.value)}
-						className="w-full bg-zinc-900 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-white/40 transition-colors"
-					>
-						{CATEGORIES.map(c => (
-							<option key={c} value={c}>
-								{c}
-							</option>
+						placeholder="Select or type a category..."
+						className="w-full bg-zinc-900 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-white/40 transition-colors"
+					/>
+					<datalist id="categories-list">
+						{categories.map(c => (
+							<option key={c} value={c} />
 						))}
-					</select>
+					</datalist>
 				</div>
 
 				<div className="space-y-2">

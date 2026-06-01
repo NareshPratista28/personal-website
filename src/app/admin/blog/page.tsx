@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
-import { Plus, Edit } from 'lucide-react'
+import { Plus } from 'lucide-react'
+import BlogListClient from '@/components/admin/BlogListClient'
 
 export default async function AdminBlogPage({
 	searchParams,
@@ -71,57 +72,7 @@ export default async function AdminBlogPage({
 			</div>
 
 			{/* Posts */}
-			<div className="space-y-3">
-				{posts.length === 0 ? (
-					<div className="text-center py-24 text-zinc-600">
-						<p className="text-sm">No posts yet.</p>
-						<Link
-							href="/admin/blog/new"
-							className="inline-block mt-4 text-white text-sm underline"
-						>
-							Write your first post
-						</Link>
-					</div>
-				) : (
-					posts.map(post => (
-						<div
-							key={post.id}
-							className="group bg-zinc-900 border border-white/10 hover:border-white/20 rounded-xl px-6 py-5 flex items-start justify-between gap-4 transition-all"
-						>
-							<div className="min-w-0 flex-1">
-								<div className="flex items-center gap-2 mb-2">
-									<span
-										className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-											post.status === 'PUBLISHED'
-												? 'bg-white/10 text-white'
-												: 'bg-zinc-800 text-zinc-500'
-										}`}
-									>
-										{post.status}
-									</span>
-									{post.publishedAt && (
-										<span className="text-xs text-zinc-600">
-											{new Date(post.publishedAt).toLocaleDateString('en-US', {
-												month: 'short',
-												day: 'numeric',
-												year: 'numeric',
-											})}
-										</span>
-									)}
-								</div>
-								<h3 className="text-base font-bold text-white truncate">{post.title}</h3>
-								<p className="text-xs text-zinc-500 mt-1 line-clamp-1">{post.excerpt}</p>
-							</div>
-							<Link
-								href={`/admin/blog/${post.id}/edit`}
-								className="shrink-0 text-zinc-500 hover:text-white transition-colors pt-1"
-							>
-								<Edit className="w-4 h-4" />
-							</Link>
-						</div>
-					))
-				)}
-			</div>
+			<BlogListClient initialPosts={posts} />
 		</div>
 	)
 }

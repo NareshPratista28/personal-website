@@ -11,7 +11,7 @@ export default async function AdminLayout({
 
 	return (
 		<SessionProvider session={session}>
-			<div className="min-h-screen bg-[#0a0a0a] flex">
+			<div className="min-h-screen bg-zinc-950 flex selection:bg-white/20">
 				{/* Sidebar */}
 				{session && <AdminSidebar userName={session.user?.name ?? 'Administrator'} />}
 

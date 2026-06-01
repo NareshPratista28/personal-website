@@ -17,8 +17,18 @@ export default function SettingsForm({ settings }: { settings: Settings }) {
 		}
 	})
 	const [newTech, setNewTech] = useState('')
+
+	const [categoryList, setCategoryList] = useState<string[]>(() => {
+		try {
+			return JSON.parse(settings.project_categories || '["Web App", "Mobile App", "UI/UX Design"]')
+		} catch {
+			return ["Web App", "Mobile App", "UI/UX Design"]
+		}
+	})
+	const [newCategory, setNewCategory] = useState('')
+
 	const [activeTab, setActiveTab] = useState<
-		'profile' | 'social' | 'tech' | 'contact'
+		'profile' | 'social' | 'tech' | 'categories' | 'contact'
 	>('profile')
 
 	function set(key: string, value: string) {
@@ -39,6 +49,20 @@ export default function SettingsForm({ settings }: { settings: Settings }) {
 		setForm(f => ({ ...f, techStack: JSON.stringify(updated) }))
 	}
 
+	function addCategory() {
+		if (!newCategory.trim()) return
+		const updated = [...categoryList, newCategory.trim()]
+		setCategoryList(updated)
+		setForm(f => ({ ...f, project_categories: JSON.stringify(updated) }))
+		setNewCategory('')
+	}
+
+	function removeCategory(idx: number) {
+		const updated = categoryList.filter((_, i) => i !== idx)
+		setCategoryList(updated)
+		setForm(f => ({ ...f, project_categories: JSON.stringify(updated) }))
+	}
+
 	async function handleSave() {
 		setLoading(true)
 		setSuccess(false)
@@ -56,21 +80,22 @@ export default function SettingsForm({ settings }: { settings: Settings }) {
 		{ key: 'profile', label: 'Profile' },
 		{ key: 'social', label: 'Social Links' },
 		{ key: 'tech', label: 'Tech Stack' },
+		{ key: 'categories', label: 'Project Categories' },
 		{ key: 'contact', label: 'Contact' },
 	] as const
 
 	return (
 		<div className="space-y-8">
-			<div className="flex gap-1 bg-zinc-900 border border-white/10 rounded-xl p-1">
+			<div className="flex flex-wrap gap-1 bg-zinc-900 border border-white/10 rounded-xl p-1">
 				{tabs.map(tab => (
 					<button
 						key={tab.key}
 						type="button"
 						onClick={() => setActiveTab(tab.key)}
-						className={`flex-1 py-2 text-xs font-bold tracking-widest uppercase rounded-lg transition-all ${
+						className={`flex-1 py-2 px-2 text-[10px] sm:text-xs font-bold tracking-widest uppercase rounded-lg transition-all ${
 							activeTab === tab.key
 								? 'bg-white text-black'
-								: 'text-zinc-500 hover:text-white'
+								: 'text-zinc-500 hover:text-white hover:bg-white/5'
 						}`}
 					>
 						{tab.label}
@@ -202,6 +227,53 @@ export default function SettingsForm({ settings }: { settings: Settings }) {
 					{techList.length === 0 && (
 						<p className="text-zinc-600 text-sm">
 							No technologies yet. Add some above.
+						</p>
+					)}
+				</div>
+			)}
+
+			{activeTab === 'categories' && (
+				<div className="space-y-4">
+					<div className="flex gap-2">
+						<input
+							type="text"
+							value={newCategory}
+							onChange={e => setNewCategory(e.target.value)}
+							onKeyDown={e =>
+								e.key === 'Enter' && (e.preventDefault(), addCategory())
+							}
+							placeholder="Add category (e.g. Web App)..."
+							className="flex-1 bg-zinc-900 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-white/40 transition-colors"
+						/>
+						<button
+							type="button"
+							onClick={addCategory}
+							className="shrink-0 flex items-center gap-2 bg-white text-black font-bold text-xs tracking-widest uppercase px-4 py-3 rounded-lg hover:bg-zinc-200 transition-colors"
+						>
+							<Plus className="w-3.5 h-3.5" />
+							Add
+						</button>
+					</div>
+					<div className="flex flex-wrap gap-2">
+						{categoryList.map((cat, idx) => (
+							<span
+								key={idx}
+								className="flex items-center gap-2 bg-zinc-900 border border-white/10 text-white text-xs font-semibold px-3 py-1.5 rounded-full"
+							>
+								{cat}
+								<button
+									type="button"
+									onClick={() => removeCategory(idx)}
+									className="text-zinc-500 hover:text-red-400 transition-colors"
+								>
+									<X className="w-3 h-3" />
+								</button>
+							</span>
+						))}
+					</div>
+					{categoryList.length === 0 && (
+						<p className="text-zinc-600 text-sm">
+							No categories yet. Add some above.
 						</p>
 					)}
 				</div>

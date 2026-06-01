@@ -11,8 +11,15 @@ export default async function EditProjectPage({
 	const project = await prisma.project.findUnique({ where: { id } })
 	if (!project) notFound()
 
+	const settings = await prisma.siteSettings.findUnique({ where: { key: 'project_categories' } })
+	let categories: string[] = ["Web App", "Mobile App", "UI/UX Design"]
+	try {
+		if (settings?.value) categories = JSON.parse(settings.value)
+	} catch {}
+
 	return (
 		<ProjectForm
+			predefinedCategories={categories}
 			initial={{
 				id: project.id,
 				title: project.title,
